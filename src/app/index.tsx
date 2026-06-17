@@ -24,14 +24,6 @@ function ListItem({ item }: { item: Item }) {
   );
 }
 
-function ListFooter() {
-  return (
-    <View style={styles.footer}>
-      <Text style={styles.footerText}>Footer — end of list</Text>
-    </View>
-  );
-}
-
 export default function Index() {
   const sheetRef = useRef<TrueSheet>(null);
 
@@ -41,15 +33,19 @@ export default function Index() {
         <Text style={styles.buttonText}>Open Sheet</Text>
       </TouchableOpacity>
 
-      <TrueSheet ref={sheetRef} sizes={["large"]} cornerRadius={24}>
+      <TrueSheet ref={sheetRef} scrollable={true} detents={[1]}>
         <LegendList
           data={ITEMS}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <ListItem item={item} />}
           estimatedItemSize={56}
           contentContainerStyle={styles.listContent}
+          nestedScrollEnabled={true}
         />
-        <ListFooter/>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Footer — end of list</Text>
+        </View>
       </TrueSheet>
     </View>
   );
@@ -101,6 +97,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: "#e0e0e0",
+    backgroundColor: 'white',
   },
   footerText: {
     fontSize: 13,
