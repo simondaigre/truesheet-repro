@@ -1,98 +1,109 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRef, useMemo } from "react";
+import { Text, View, StyleSheet, TouchableOpacity } from "react-native";
+import { TrueSheet } from "@lodev09/react-native-true-sheet";
+import {LegendList} from "@legendapp/list/react-native";
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+type Item = { id: string; label: string; value: number };
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+function generateItems(count: number): Item[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: String(i),
+    label: `Item ${i + 1}`,
+    value: Math.floor(Math.random() * 1000),
+  }));
+}
+
+const ITEMS = generateItems(100);
+
+function ListItem({ item }: { item: Item }) {
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
+    <View style={styles.item}>
+      <Text style={styles.itemLabel}>{item.label}</Text>
+      <Text style={styles.itemValue}>{item.value}</Text>
+    </View>
   );
 }
 
-export default function HomeScreen() {
+function ListFooter() {
   return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+    <View style={styles.footer}>
+      <Text style={styles.footerText}>Footer — end of list</Text>
+    </View>
+  );
+}
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
+export default function Index() {
+  const sheetRef = useRef<TrueSheet>(null);
 
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
+  return (
+    <View style={styles.container}>
+      <TouchableOpacity style={styles.button} onPress={() => sheetRef.current?.present()}>
+        <Text style={styles.buttonText}>Open Sheet</Text>
+      </TouchableOpacity>
 
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <TrueSheet ref={sheetRef} sizes={["large"]} cornerRadius={24}>
+        <LegendList
+          data={ITEMS}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <ListItem item={item} />}
+          estimatedItemSize={56}
+          contentContainerStyle={styles.listContent}
+        />
+        <ListFooter/>
+      </TrueSheet>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    flexDirection: 'row',
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#f5f5f5",
   },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    alignItems: 'center',
-    gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+  button: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 12,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
-  title: {
-    textAlign: 'center',
+  listContent: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+    paddingBottom: 32,
   },
-  code: {
-    textTransform: 'uppercase',
+  item: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    height: 56,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#e0e0e0",
   },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
+  itemLabel: {
+    fontSize: 15,
+    color: "#111",
+  },
+  itemValue: {
+    fontSize: 15,
+    color: "#888",
+    fontVariant: ["tabular-nums"],
+  },
+  footer: {
+    marginTop: 16,
+    paddingVertical: 20,
+    alignItems: "center",
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: "#e0e0e0",
+  },
+  footerText: {
+    fontSize: 13,
+    color: "#aaa",
   },
 });
